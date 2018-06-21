@@ -4,17 +4,17 @@ using System.Linq;
 
 namespace InfiniteSpiral
 {
-    class Location
+    class DataLocation
     {
         public int x = 0;
         public int y = 0;
 
-        public Location()
+        public DataLocation()
         {
 
         }
 
-        public Location(int x, int y)
+        public DataLocation(int x, int y)
         {
             SetLocation(x, y);
         }
@@ -25,37 +25,44 @@ namespace InfiniteSpiral
             this.y = y;
         }
     }
-    class Program
+    class TestDataLocation
     {
-        static public Dictionary<int, Location> spiralDefinition = new Dictionary<int, Location>()
+        // Dictionary containing the cartesian coordinates of the Data Locations
+        static public Dictionary<int, DataLocation> spiralDataLocations = new Dictionary<int, DataLocation>()
         {
-            { 1, new Location(0, 0)},
-            { 2, new Location(1, 0)}
+            // Initialize the spiralDataLocations with coordinates for Data Location 1 and Data Location 2
+            { 1, new DataLocation(0, 0)},
+            { 2, new DataLocation(1, 0)}
         };
-        static public Dictionary<string, Int64> spiralValueDefinition = new Dictionary<string, Int64>()
+
+        // Dictionary containing the Values associated with cartesian coordinates of a Data Location
+        static public Dictionary<string, Int64> spiralDataValues = new Dictionary<string, Int64>()
         {
+            // Initialize the spiralDataValues with values for Data Locations 0,0 (Data Location 1) and 1,0 (Data Location 2)
             {"0,0", 1},
             {"1,0", 1}
         };
-        static public Dictionary<string, Location> compassDefinition = new Dictionary<string, Location>()
+
+        // Dictionary containing the cartesian representation of memory directions possible
+        static public Dictionary<string, DataLocation> memoryDirections = new Dictionary<string, DataLocation>()
         {
-            { "right", new Location(1, 0)},
-            { "left", new Location(-1, 0)},
-            { "up", new Location(0, 1)},
-            { "down", new Location(0, -1)},
-            { "upright", new Location(1, 1)},
-            { "downleft", new Location(-1, -1)},
-            { "downright", new Location(1, -1)},
-            { "upleft", new Location(-1, 1) }
+            { "right", new DataLocation(1, 0)},
+            { "left", new DataLocation(-1, 0)},
+            { "up", new DataLocation(0, 1)},
+            { "down", new DataLocation(0, -1)},
+            { "upright", new DataLocation(1, 1)},
+            { "downleft", new DataLocation(-1, -1)},
+            { "downright", new DataLocation(1, -1)},
+            { "upleft", new DataLocation(-1, 1) }
         };
 
 
         static void Main(string[] args)
         {
-            Location accessPortLocation = new Location();
+            DataLocation accessPortLocation = new DataLocation();
             string dataString = "";
 
-            // Prompt user for the location of data
+            // Prompt user for the Data Location
             Console.WriteLine("Enter Data Location (To quit, type 'exit'): ");
             dataString = Console.ReadLine().ToLower();
 
@@ -65,16 +72,16 @@ namespace InfiniteSpiral
                 {
                     int dataInt;
                     int dataDistance;
+
                     //Check that the string entered is numeric and a positive integer
                     if (int.TryParse(dataString, out dataInt) && dataInt > 0)
                     {
-                        // Calculate Data Location
-                        Location dataPortLocation = CalculateDataLocation(dataInt);
+                        // Calculate cartesian coordinates for a given Data Location
+                        DataLocation dataPortLocation = CalculateCartesianCoordinate(dataInt);
 
                         // Calculate the number of steps
                         dataDistance = Math.Abs(accessPortLocation.x - dataPortLocation.x) + Math.Abs(dataPortLocation.y - accessPortLocation.y);
-                        Console.WriteLine("Data from square {0} is carried {1} steps and has a value of {2}", dataInt, dataDistance, spiralValueDefinition[dataPortLocation.x + "," + dataPortLocation.y]);
-
+                        Console.WriteLine("Data from data location {0} is carried {1} steps and has a value of {2}", dataInt, dataDistance, spiralDataValues[dataPortLocation.x + "," + dataPortLocation.y]);
                     }
                     else
                     {
@@ -101,14 +108,14 @@ namespace InfiniteSpiral
             }
         }
 
-        private static Location CalculateDataLocation(int dataInt)
+        private static DataLocation CalculateCartesianCoordinate(int dataInt)
         {
-            Location finalLocation = new Location();
+            DataLocation finalLocation = new DataLocation();
             bool first = false;
             for (int n = 1; n <= dataInt; n++)
             {
-                Location location;
-                if (spiralDefinition.TryGetValue(n, out location))
+                DataLocation location;
+                if (spiralDataLocations.TryGetValue(n, out location))
                 {
                     if (n == dataInt)
                     {
@@ -118,17 +125,18 @@ namespace InfiniteSpiral
                 }
                 else
                 {
-                    // Update spiralDefinition
+                    // Update spiralDataLocations
                     int prevDataInt = n - 1;
                     int newDataInt = n;
 
-                    UpdateSpiralDefinition(spiralDefinition[prevDataInt], newDataInt);
-                    if (spiralValueDefinition[spiralDefinition[newDataInt].x + "," + spiralDefinition[newDataInt].y] > dataInt && first == false)
+                    UpdateSpiralDataLocations(spiralDataLocations[prevDataInt], newDataInt);
+
+                    if (spiralDataValues[spiralDataLocations[newDataInt].x + "," + spiralDataLocations[newDataInt].y] > dataInt && first == false)
                     {
-                        Console.WriteLine("First Value Greater than {0} is {1} for {2}", dataInt, spiralValueDefinition[spiralDefinition[newDataInt].x + "," + spiralDefinition[newDataInt].y], newDataInt);
+                        Console.WriteLine("First Value Greater than {0} is {1} for data location {2}", dataInt, spiralDataValues[spiralDataLocations[newDataInt].x + "," + spiralDataLocations[newDataInt].y], newDataInt);
                         first = true;
                     }
-                    finalLocation.SetLocation(spiralDefinition[newDataInt].x, spiralDefinition[newDataInt].y);
+                    finalLocation.SetLocation(spiralDataLocations[newDataInt].x, spiralDataLocations[newDataInt].y);
                 }
 
 
@@ -136,210 +144,208 @@ namespace InfiniteSpiral
             return finalLocation;
         }
 
-        private static void UpdateSpiralDefinition(Location startLocation, int newDataInt)
+
+        private static void UpdateSpiralDataLocations(DataLocation startLocation, int newDataInt)
         {
             Int64 value = 0;
-            Location rightLocation = new Location(startLocation.x + compassDefinition["right"].x, startLocation.y + compassDefinition["right"].y);
-            Location leftLocation = new Location(startLocation.x + compassDefinition["left"].x, startLocation.y + compassDefinition["left"].y);
-            Location upLocation = new Location(startLocation.x + compassDefinition["up"].x, startLocation.y + compassDefinition["up"].y);
-            Location downLocation = new Location(startLocation.x + compassDefinition["down"].x, startLocation.y + compassDefinition["down"].y);
 
-            bool right = spiralDefinition.Values.Any(a => a.x.Equals(rightLocation.x) && a.y.Equals(rightLocation.y));
-            bool left = spiralDefinition.Values.Any(a => a.x.Equals(leftLocation.x) && a.y.Equals(leftLocation.y));
-            bool up = spiralDefinition.Values.Any(a => a.x.Equals(upLocation.x) && a.y.Equals(upLocation.y));
-            bool down = spiralDefinition.Values.Any(a => a.x.Equals(downLocation.x) && a.y.Equals(downLocation.y));
+            // Generate potential Data Locations
+            DataLocation rightLocation = GenerateLocation(startLocation, "right");
+            DataLocation leftLocation = GenerateLocation(startLocation, "left");
+            DataLocation upLocation = GenerateLocation(startLocation, "up");
+            DataLocation downLocation = GenerateLocation(startLocation, "down");
 
+            // Check whether the potential Data Locations are occupied
+            bool right = CheckLocationAvailability(rightLocation);
+            bool left = CheckLocationAvailability(leftLocation);
+            bool up = CheckLocationAvailability(upLocation);
+            bool down = CheckLocationAvailability(downLocation);
+
+            // Identify the position of the new Data Location in reference to the starting Data Location
             if (right == false && left == true && up == false)
             {
-                // Go Up
-                spiralDefinition[newDataInt] = upLocation;
+                // Place up
+                spiralDataLocations[newDataInt] = upLocation;
 
-                Location downLeftLocation = new Location(upLocation.x + compassDefinition["downleft"].x, upLocation.y + compassDefinition["downleft"].y);
-                Location downRightLocation = new Location(upLocation.x + compassDefinition["downright"].x, upLocation.y + compassDefinition["downright"].y);
-                Location newLeftLocation = new Location(upLocation.x + compassDefinition["left"].x, upLocation.y + compassDefinition["left"].y);
-                Location newDownLocation = new Location(upLocation.x + compassDefinition["down"].x, upLocation.y + compassDefinition["down"].y);
-                Location upLeftLocation = new Location(upLocation.x + compassDefinition["upleft"].x, upLocation.y + compassDefinition["upleft"].y);
+                // Identify potential adjacent Data Locations
+                DataLocation downLeftLocation = GenerateLocation(upLocation, "downleft");
+                DataLocation downRightLocation = GenerateLocation(upLocation, "downright");
+                DataLocation newLeftLocation = GenerateLocation(upLocation, "left");
+                DataLocation newDownLocation = GenerateLocation(upLocation, "down");
+                DataLocation upLeftLocation = GenerateLocation(upLocation, "upleft");
 
-                bool downRight = spiralDefinition.Values.Any(a => a.x.Equals(downRightLocation.x) && a.y.Equals(downRightLocation.y));
-                bool downLeft = spiralDefinition.Values.Any(a => a.x.Equals(downLeftLocation.x) && a.y.Equals(downLeftLocation.y));
-                bool newLeft = spiralDefinition.Values.Any(a => a.x.Equals(newLeftLocation.x) && a.y.Equals(newLeftLocation.y));
-                bool newDown = spiralDefinition.Values.Any(a => a.x.Equals(newDownLocation.x) && a.y.Equals(newDownLocation.y));
-                bool upLeft = spiralDefinition.Values.Any(a => a.x.Equals(upLeftLocation.x) && a.y.Equals(upLeftLocation.y));
-
-
-                // Get the new left value if the spot is filled
-                if (newLeft)
+                // Check whether the potential adjacent Data Locations are occupied.
+                // If they are capture and sum the values associated with the Data Locations
+                if (CheckLocationAvailability(newLeftLocation))
                 {
                     string newLeftString = newLeftLocation.x + "," + newLeftLocation.y;
-                    value += spiralValueDefinition[newLeftString];
+                    value += spiralDataValues[newLeftString];
                 }
 
-                // If down, down to the left or down to the right spot is filled get their value
-                if (newDown)
+                if (CheckLocationAvailability(newDownLocation))
                 {
                     string newDownString = newDownLocation.x + "," + newDownLocation.y;
-                    value += spiralValueDefinition[newDownString];
+                    value += spiralDataValues[newDownString];
                 }
 
-                if (downLeft)
+                if (CheckLocationAvailability(downLeftLocation))
                 {
                     string downLeftString = downLeftLocation.x + "," + downLeftLocation.y;
-                    value += spiralValueDefinition[downLeftString];
+                    value += spiralDataValues[downLeftString];
                 }
 
-                if (downRight)
+                if (CheckLocationAvailability(downRightLocation))
                 {
                     string downRightString = downRightLocation.x + "," + downRightLocation.y;
-                    value += spiralValueDefinition[downRightString];
+                    value += spiralDataValues[downRightString];
                 }
 
-                if (upLeft)
+                if (CheckLocationAvailability(upLeftLocation))
                 {
                     string upLeftString = upLeftLocation.x + "," + upLeftLocation.y;
-                    value += spiralValueDefinition[upLeftString];
+                    value += spiralDataValues[upLeftString];
                 }
 
-
+                // Update the Data Value for the New Data Location
                 string upString = upLocation.x + "," + upLocation.y;
-                spiralValueDefinition[upString] = value;
+                spiralDataValues[upString] = value;
             }
             else if (left == false && up == false && down == true)
             {
-                // Go Left
-                spiralDefinition[newDataInt] = leftLocation;
+                // Place Left
+                spiralDataLocations[newDataInt] = leftLocation;
 
-                Location downLeftLocation = new Location(leftLocation.x + compassDefinition["downleft"].x, leftLocation.y + compassDefinition["downleft"].y);
-                Location downRightLocation = new Location(leftLocation.x + compassDefinition["downright"].x, leftLocation.y + compassDefinition["downright"].y);
-                Location newDownLocation = new Location(leftLocation.x + compassDefinition["down"].x, leftLocation.y + compassDefinition["down"].y);
-                Location newRightLocation = new Location(leftLocation.x + compassDefinition["right"].x, leftLocation.y + compassDefinition["right"].y);
+                // Identify potential adjacent Data Locations
+                DataLocation downLeftLocation = GenerateLocation(leftLocation, "downleft");
+                DataLocation downRightLocation = GenerateLocation(leftLocation, "downright");
+                DataLocation newDownLocation = GenerateLocation(leftLocation, "down");
+                DataLocation newRightLocation = GenerateLocation(leftLocation, "right");
 
-                bool downRight = spiralDefinition.Values.Any(a => a.x.Equals(downRightLocation.x) && a.y.Equals(downRightLocation.y));
-                bool downLeft = spiralDefinition.Values.Any(a => a.x.Equals(downLeftLocation.x) && a.y.Equals(downLeftLocation.y));
-                bool newDown = spiralDefinition.Values.Any(a => a.x.Equals(newDownLocation.x) && a.y.Equals(newDownLocation.y));
-                bool newRight = spiralDefinition.Values.Any(a => a.x.Equals(newRightLocation.x) && a.y.Equals(newRightLocation.y));
-
-
-                if (newRight)
+                // Check whether the potential adjacent Data Locations are occupied.
+                // If they are capture and sum the values associated with the Data Locations
+                if (CheckLocationAvailability(newRightLocation))
                 {
                     string newRightString = newRightLocation.x + "," + newRightLocation.y;
-                    value += spiralValueDefinition[newRightString];
+                    value += spiralDataValues[newRightString];
                 }
-                // Get the new down value if the spot is filled
-                if (newDown)
+                
+                if (CheckLocationAvailability(newDownLocation))
                 {
                     string newDownString = newDownLocation.x + "," + newDownLocation.y;
-                    value += spiralValueDefinition[newDownString];
+                    value += spiralDataValues[newDownString];
                 }
 
-                if (downLeft)
+                if (CheckLocationAvailability(downLeftLocation))
                 {
                     string downLeftString = downLeftLocation.x + "," + downLeftLocation.y;
-                    value += spiralValueDefinition[downLeftString];
+                    value += spiralDataValues[downLeftString];
                 }
 
-                if (downRight)
+                if (CheckLocationAvailability(newRightLocation))
                 {
                     string downRightString = downRightLocation.x + "," + downRightLocation.y;
-                    value += spiralValueDefinition[downRightString];
+                    value += spiralDataValues[downRightString];
                 }
 
+                // Update the Data Value for the New Data Location
                 string leftString = leftLocation.x + "," + leftLocation.y;
-                spiralValueDefinition[leftString] = value;
+                spiralDataValues[leftString] = value;
             }
             else if (right == true && left == false && down == false)
             {
-                // Go Down
-                spiralDefinition[newDataInt] = downLocation;
+                // Place Down
+                spiralDataLocations[newDataInt] = downLocation;
 
-                Location upRightLocation = new Location(downLocation.x + compassDefinition["upright"].x, downLocation.y + compassDefinition["upright"].y);
-                Location downRightLocation = new Location(downLocation.x + compassDefinition["downright"].x, downLocation.y + compassDefinition["downright"].y);
-                Location newRightLocation = new Location(downLocation.x + compassDefinition["right"].x, downLocation.y + compassDefinition["right"].y);
-                Location newUpLocation = new Location(downLocation.x + compassDefinition["up"].x, downLocation.y + compassDefinition["up"].y);
+                // Identify potential adjacent Data Locations
+                DataLocation upRightLocation = GenerateLocation(downLocation, "upright");
+                DataLocation downRightLocation = GenerateLocation(downLocation, "downright");
+                DataLocation newRightLocation = GenerateLocation(downLocation, "right");
+                DataLocation newUpLocation = GenerateLocation(downLocation, "up");
 
-
-                bool downRight = spiralDefinition.Values.Any(a => a.x.Equals(downRightLocation.x) && a.y.Equals(downRightLocation.y));
-                bool upRight = spiralDefinition.Values.Any(a => a.x.Equals(upRightLocation.x) && a.y.Equals(upRightLocation.y));
-                bool newRight = spiralDefinition.Values.Any(a => a.x.Equals(newRightLocation.x) && a.y.Equals(newRightLocation.y));
-                bool newUp = spiralDefinition.Values.Any(a => a.x.Equals(newUpLocation.x) && a.y.Equals(newUpLocation.y));
-
-
-
-                // Get the right value if the spot is filled
-                if (newRight)
+                // Check whether the potential adjacent Data Locations are occupied.
+                // If they are capture and sum the values associated with the Data Locations
+                if (CheckLocationAvailability(newRightLocation))
                 {
                     string newRightString = newRightLocation.x + "," + newRightLocation.y;
-                    value += spiralValueDefinition[newRightString];
+                    value += spiralDataValues[newRightString];
                 }
 
-                // If up, up to the right or down to the right spot is filled get their value
-                if (newUp)
+                if (CheckLocationAvailability(newUpLocation))
                 {
                     string newUpString = newUpLocation.x + "," + newUpLocation.y;
-                    value += spiralValueDefinition[newUpString];
+                    value += spiralDataValues[newUpString];
                 }
 
-                if (upRight)
+                if (CheckLocationAvailability(upRightLocation))
                 {
                     string upRightString = upRightLocation.x + "," + upRightLocation.y;
-                    value += spiralValueDefinition[upRightString];
+                    value += spiralDataValues[upRightString];
                 }
 
-                if (downRight)
+                if (CheckLocationAvailability(downRightLocation))
                 {
                     string downRightString = downRightLocation.x + "," + downRightLocation.y;
-                    value += spiralValueDefinition[downRightString];
+                    value += spiralDataValues[downRightString];
                 }
 
+                // Update the Data Value for the New Data Location
                 string downString = downLocation.x + "," + downLocation.y;
-                spiralValueDefinition[downString] = value;
+                spiralDataValues[downString] = value;
             }
             else if (right == false && up == true && down == false)
             {
-                // Go Right
-                spiralDefinition[newDataInt] = rightLocation;
+                // Place to the Right of the starting Data Location
+                spiralDataLocations[newDataInt] = rightLocation;
 
-                Location upRightLocation = new Location(rightLocation.x + compassDefinition["upright"].x, rightLocation.y + compassDefinition["upright"].y);
-                Location upLeftLocation = new Location(rightLocation.x + compassDefinition["upleft"].x, rightLocation.y + compassDefinition["upleft"].y);
-                Location newUpLocation = new Location(rightLocation.x + compassDefinition["up"].x, rightLocation.y + compassDefinition["up"].y);
-                Location newLeftLocation = new Location(rightLocation.x + compassDefinition["left"].x, rightLocation.y + compassDefinition["left"].y);
+                // Identify potential adjacent Data Locations
+                DataLocation upRightLocation = GenerateLocation(rightLocation, "upright");
+                DataLocation upLeftLocation = GenerateLocation(rightLocation, "upleft");
+                DataLocation newUpLocation = GenerateLocation(rightLocation, "up");
+                DataLocation newLeftLocation = GenerateLocation(rightLocation, "left");
 
-
-                bool upRight = spiralDefinition.Values.Any(a => a.x.Equals(upRightLocation.x) && a.y.Equals(upRightLocation.y));
-                bool upLeft = spiralDefinition.Values.Any(a => a.x.Equals(upLeftLocation.x) && a.y.Equals(upLeftLocation.y));
-                bool newUp = spiralDefinition.Values.Any(a => a.x.Equals(newUpLocation.x) && a.y.Equals(newUpLocation.y));
-                bool newLeft = spiralDefinition.Values.Any(a => a.x.Equals(newLeftLocation.x) && a.y.Equals(newLeftLocation.y));
-
-                if (newLeft)
+                // Check whether the potential adjacent Data Locations are occupied.
+                // If they are capture and sum the values associated with the Data Locations
+                if (CheckLocationAvailability(newLeftLocation))
                 {
                     string newLeftSring = newLeftLocation.x + "," + newLeftLocation.y;
-                    value += spiralValueDefinition[newLeftSring];
+                    value += spiralDataValues[newLeftSring];
                 }
 
-                // Get the up value if it is filled
-                if (newUp)
+                if (CheckLocationAvailability(newUpLocation))
                 {
                     string newUpString = newUpLocation.x + "," + newUpLocation.y;
-                    value += spiralValueDefinition[newUpString];
+                    value += spiralDataValues[newUpString];
                 }
 
-                // If up to the right, up to left spot is filled get their value
-                if (upRight)
+                if (CheckLocationAvailability(upRightLocation))
                 {
                     string upRightString = upRightLocation.x + "," + upRightLocation.y;
-                    value += spiralValueDefinition[upRightString];
+                    value += spiralDataValues[upRightString];
                 }
 
-                if (upLeft)
+                if (CheckLocationAvailability(upLeftLocation))
                 {
                     string upLeftString = upLeftLocation.x + "," + upLeftLocation.y;
-                    value += spiralValueDefinition[upLeftString];
+                    value += spiralDataValues[upLeftString];
                 }
 
+                // Update the Data Value for the New Data Location
                 string rightString = rightLocation.x + "," + rightLocation.y;
-                spiralValueDefinition[rightString] = value;
+                spiralDataValues[rightString] = value;
             }
 
         }
 
+        private static bool CheckLocationAvailability(DataLocation location)
+        {
+            bool locationExist = spiralDataLocations.Values.Any(a => a.x.Equals(location.x) && a.y.Equals(location.y));
+            return locationExist;
+        }
+
+        private static DataLocation GenerateLocation(DataLocation startLocation, string direction)
+        {
+            DataLocation location = new DataLocation(startLocation.x + memoryDirections[direction].x, startLocation.y + memoryDirections[direction].y); ;
+            return location;
+        }
     }
 }
